@@ -16,11 +16,9 @@ namespace DynamicScrollRect
         public float ContentDecelerationInOverflow => _contentDecelerationInOverflow;
     }
 
-// TODO :: Manage Items Deactivating and Activating etc.
-// TODO :: Hidden Rules Between TryRestrictionMovement - GetContentPosition etc.
+    // TODO :: Hidden Rules Between TryRestrictionMovement - GetContentPosition etc.
     public class DynamicScrollRect : ScrollRect
     {
-        // TODO : this field does not serialized right now
         [SerializeField] private DynamicScrollRestrictionSettings _restrictionSettings = null;
     
         private bool _isDragging = false;
@@ -256,7 +254,7 @@ namespace DynamicScrollRect
             return true;
         }
 
-        // TODO : Handle Vertical Movement
+        // TODO : Handle Horizontal Movement
         private Vector2 GetRestrictedContentPositionOnDrag(PointerEventData eventData)
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
