@@ -1,15 +1,15 @@
-﻿using DynamicScrollRect;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
+using DynamicScrollRect;
 
 public class ScrollItemDefault : ScrollItem<ScrollItemData>
 {
     [SerializeField] private TextMeshProUGUI _text = null;
-    
-    public override void InitItem(int index, Vector2 gridPos, ScrollItemData data)
+
+    protected override void InitItemData(ScrollItemData data)
     {
-        _text.SetText(index.ToString());
+        _text.SetText(data.Index.ToString());
         
-        base.InitItem(index, gridPos, data);
+        base.InitItemData(data);
     }
 }

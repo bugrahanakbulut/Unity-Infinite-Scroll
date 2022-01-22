@@ -183,7 +183,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 376881819}
-  - component: {fileID: 376881820}
   m_Layer: 5
   m_Name: Content
   m_TagString: Untagged
@@ -211,21 +210,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &376881820
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 376881818}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2ba576c952134c278ee85170a9bfc463, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _spacing: {x: 25, y: 25}
-  _visibleItemCount: {x: 3, y: 4}
-  _refItem: {fileID: 2142003865}
 --- !u!1 &453260960
 GameObject:
   m_ObjectHideFlags: 0
@@ -641,8 +625,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: afb29baba1af53d41b39ff492517e1f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _content: {fileID: 376881820}
-  _itemCount: 4
+  _content: {fileID: 1888542058}
+  _itemCount: 50
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -804,6 +788,7 @@ GameObject:
   - component: {fileID: 1888542060}
   - component: {fileID: 1888542059}
   - component: {fileID: 1888542061}
+  - component: {fileID: 1888542058}
   m_Layer: 5
   m_Name: ScrollRect
   m_TagString: Untagged
@@ -832,6 +817,21 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 800, y: 1000}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1888542058
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1888542056}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ba576c952134c278ee85170a9bfc463, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _spacing: {x: 25, y: 25}
+  _fillContent: 1
+  _fixedItemCount: 25
 --- !u!114 &1888542059
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -901,8 +901,8 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _restrictionSettings:
-    _exceedSizeInPixel: 400
-    _contentDecreaseRate: 0.5
+    _contentOverflowRange: 400
+    _contentDecelerationInOverflow: 0.25
 --- !u!1 &2142003861
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,18 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
+using System.Collections.Generic;
 
-// TODO :: automatize visible item count it while considering grid layout
-// TODO :: create new methods for item create and delete to get rid of code duplication of it
 namespace DynamicScrollRect
 {
+    // TODO : handle if datum updated in runtime
     public class ScrollContent : MonoBehaviour
     {
         [SerializeField] private Vector2 _spacing = Vector2.zero;
         public Vector2 Spacing => _spacing;
-    
-        [SerializeField] private Vector2 _visibleItemCount = Vector2.zero;
 
-        [SerializeField] private ScrollItem _refItem = null;
+        [Tooltip("it will fill content rect in main axis(horizontal or vertical) automatically simply ignores _fixedItemCount")]
+        [SerializeField] private bool _fillContent = false;
+        
+        [Tooltip("if scroll is vertical it is item count in each row vice versa for horizontal")]
+        [Min(1)][SerializeField] private int _fixedItemCount = 1;
 
         private DynamicScrollRect _dynamicScrollRect;
         private DynamicScrollRect DynamicScrollRect
@@ -21,10 +23,31 @@ namespace DynamicScrollRect
             {
                 if (_dynamicScrollRect == null)
                 {
-                    _dynamicScrollRect = GetComponentInParent<DynamicScrollRect>();
+                    _dynamicScrollRect = GetComponent<DynamicScrollRect>();
                 }
 
                 return _dynamicScrollRect;
+            }
+        }
+
+        private ScrollItem _referenceItem;
+
+        private ScrollItem _ReferenceItem
+        {
+            get
+            {
+                if (_referenceItem == null)
+                {
+                    _referenceItem = GetComponentInChildren<ScrollItem>();
+
+                    if (_referenceItem == null)
+                    {
+                        throw new Exception($"No Scroll Item found under scroll rect content." +
+                                            $"You should create reference scroll item under DynamicScroll Content first.");
+                    }
+                }
+
+                return _referenceItem;
             }
         }
 
@@ -34,10 +57,10 @@ namespace DynamicScrollRect
 
         private List<ScrollItemData> _datum;
 
-        private float _itemWidth => _refItem.RectTransform.rect.width;
+        private float _itemWidth => _ReferenceItem.RectTransform.rect.width;
         public float ItemWidth => _itemWidth;
     
-        private float _itemHeight => _refItem.RectTransform.rect.height;
+        private float _itemHeight => _ReferenceItem.RectTransform.rect.height;
         public float ItemHeight => _itemHeight;
     
         public void InitScrollContent(List<ScrollItemData> contentDatum)
@@ -80,7 +103,7 @@ namespace DynamicScrollRect
 
         public void AddIntoHead()
         {
-            for (int i = 0; i < _visibleItemCount.x; i++)
+            for (int i = 0; i < _fixedItemCount; i++)
             {
                 AddItemToHead();
             }
@@ -88,7 +111,7 @@ namespace DynamicScrollRect
 
         public void AddIntoTail()
         {
-            for (int i = 0; i < _visibleItemCount.x; i++)
+            for (int i = 0; i < _fixedItemCount; i++)
             {
                 AddItemToTail();
             }
@@ -112,7 +135,7 @@ namespace DynamicScrollRect
 
         private void Awake()
         {
-            _refItem.gameObject.SetActive(false);
+            _ReferenceItem.gameObject.SetActive(false);
         }
 
         private void InitItemsVertical(List<ScrollItemData> contentDatum)
@@ -121,9 +144,11 @@ namespace DynamicScrollRect
         
             int itemCount = 0;
 
-            for (int col = 0; col < _visibleItemCount.y + 2; col++)
+            Vector2Int initialGridSize = CalculateInitialGridSize();
+
+            for (int col = 0; col < initialGridSize.y; col++)
             {
-                for (int row = 0; row < _visibleItemCount.x; row++)
+                for (int row = 0; row < initialGridSize.x; row++)
                 {
                     ActivateItem(itemCount);
                 
@@ -135,6 +160,30 @@ namespace DynamicScrollRect
                     }
                 }
             }
+        }
+
+        private Vector2Int CalculateInitialGridSize()
+        {
+            Vector2 contentSize = DynamicScrollRect.content.rect.size;
+
+            if (DynamicScrollRect.vertical)
+            {
+                int verticalItemCount = 4 + (int) (contentSize.y / (ItemHeight + _spacing.y));
+                
+                if (_fillContent)
+                {
+                    int horizontalItemCount = (int) ((contentSize.x + _spacing.x) / (ItemWidth + _spacing.x));
+
+                    _fixedItemCount = horizontalItemCount;
+
+                    return new Vector2Int(horizontalItemCount, verticalItemCount);
+                }
+                
+                
+                return new Vector2Int(_fixedItemCount, verticalItemCount);
+            }
+            
+            return Vector2Int.zero;
         }
 
         private void DeleteRow(int rowIndex)
@@ -224,8 +273,7 @@ namespace DynamicScrollRect
 
         private ScrollItem CreateNewScrollItem()
         {
-            GameObject item = Instantiate(_refItem.gameObject, transform);
-            // item.name = $"{gridPos.x}_{gridPos.y}";
+            GameObject item = Instantiate(_ReferenceItem.gameObject, DynamicScrollRect.content);
         
             ScrollItem scrollItem = item.GetComponent<ScrollItem>();
             scrollItem.RectTransform.pivot = new Vector2(0, 1);
@@ -238,9 +286,9 @@ namespace DynamicScrollRect
         {
             if (DynamicScrollRect.vertical)
             {
-                int col = itemIndex / (int) _visibleItemCount.x;
+                int col = itemIndex / _fixedItemCount;
 
-                int row = itemIndex - (col * (int) _visibleItemCount.x);
+                int row = itemIndex - (col * _fixedItemCount);
             
                 return new Vector2(row, col);
             }

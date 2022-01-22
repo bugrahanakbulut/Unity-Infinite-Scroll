@@ -33,15 +33,15 @@ namespace DynamicScrollRect
     public class ScrollItem<T> : ScrollItem
         where T : ScrollItemData
     {
-        public override void InitItem(int index, Vector2 gridPos, ScrollItemData data)
+        public sealed override void InitItem(int index, Vector2 gridPos, ScrollItemData data)
         {
             Index = index;
         
             GridIndex = gridPos;
 
-            if (data is T)
+            if (data is T itemData)
             {
-                InitItemData((T)data);
+                InitItemData(itemData);
             }
         }
     

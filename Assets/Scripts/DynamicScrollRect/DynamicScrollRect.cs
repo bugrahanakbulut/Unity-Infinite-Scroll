@@ -9,11 +9,11 @@ namespace DynamicScrollRect
     [Serializable]    
     public class DynamicScrollRestrictionSettings
     {
-        [SerializeField] private float _exceedSizeInPixel = 125f;
-        public float ExceedSizeInPixel => _exceedSizeInPixel;
+        [SerializeField] private float _contentOverflowRange = 125f;
+        public float ContentOverflowRange => _contentOverflowRange;
 
-        [SerializeField] [Range(0, 1)] private float _contentDecreaseRate = 0.5f;
-        public float ContentDecreaseRate => _contentDecreaseRate;
+        [SerializeField] [Range(0, 1)] private float _contentDecelerationInOverflow = 0.5f;
+        public float ContentDecelerationInOverflow => _contentDecelerationInOverflow;
     }
 
 // TODO :: Manage Items Deactivating and Activating etc.
@@ -150,7 +150,7 @@ namespace DynamicScrollRect
             
                 SetContentAnchoredPosition(contentPos);
             
-                if ((velocity * Time.deltaTime).magnitude < 25)
+                if ((velocity * Time.deltaTime).magnitude < 5)
                 {
                     StopMovement();
                 
@@ -304,7 +304,7 @@ namespace DynamicScrollRect
                 res.x = 0;
             }
 
-            velocity *= _restrictionSettings.ContentDecreaseRate;
+            velocity *= _restrictionSettings.ContentDecelerationInOverflow;
 
             return res;
         }
@@ -313,7 +313,7 @@ namespace DynamicScrollRect
         {
             bool positiveDelta = delta.y > 0;
 
-            float maxLimit = _restrictionSettings.ExceedSizeInPixel;
+            float maxLimit = _restrictionSettings.ContentOverflowRange;
 
             if (positiveDelta)
             {
