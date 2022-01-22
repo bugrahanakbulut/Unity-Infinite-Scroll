@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections;
-using System.Diagnostics;
-using Unity.Collections.LowLevel.Unsafe;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using Debug = UnityEngine.Debug;
 
-// TODO :: Elastic Run Back
 // TODO :: Manage Items Deactivating and Activating etc.
+// TODO :: Hidden Rules Between TryRestrictionMovement - GetContentPosition etc.
 public class DynamicScrollRect : ScrollRect
 {
     private bool _isDragging = false;
@@ -17,7 +13,6 @@ public class DynamicScrollRect : ScrollRect
     private bool _needRunBack = false;
 
     private Vector2 _contentStartPos = Vector2.zero;
-    private Vector2 _contentPos = Vector2.zero;
     private Vector2 _dragStartingPosition = Vector2.zero;
     private Vector2 _dragCurPosition = Vector2.zero;
     private Vector2 _lastDragDelta = Vector2.zero;
@@ -48,9 +43,7 @@ public class DynamicScrollRect : ScrollRect
         
         _isDragging = true;
 
-        _contentPos = content.anchoredPosition;
-
-        _contentStartPos = _contentPos;
+        _contentStartPos = content.anchoredPosition;
 
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             viewport,
@@ -60,51 +53,7 @@ public class DynamicScrollRect : ScrollRect
 
         _dragCurPosition = _dragStartingPosition;
     }
-
-    /*public void OnDrag(PointerEventData eventData)
-    {
-        if (!_isDragging)
-        {
-            return;
-        }
-
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            ScrollRect.viewport, 
-            eventData.position,
-            eventData.pressEventCamera,
-            out Vector2 localCursor);
-
-        _lastDragDelta = localCursor - _dragCurPosition;
-
-        _dragCurPosition = localCursor;
-
-        if (_lastDragDelta.y < 0.1f)
-        {
-            return;
-        }
-
-        if (TryRestrictContentMovement(_lastDragDelta))
-        {
-            // float restriction = GetVerticalRestrictionWeight(_lastDragDelta); 
-            
-            // SetContentPosition(restriction, true);
-            
-            // _needRunBack = true;
-            
-            // SetContentPosition(1, true);
-            
-            ScrollRect.content.anchoredPosition = _contentPos;
-            
-            ScrollRect.StopMovement();
-
-            return;
-        }
-
-        UpdateItems(_lastDragDelta);
-        
-        _contentPos = ScrollRect.content.anchoredPosition;
-    }*/
-
+    
     public override void OnDrag(PointerEventData eventData)
     {
         if (!_isDragging)
@@ -132,36 +81,28 @@ public class DynamicScrollRect : ScrollRect
         
         StopRunBackRoutine();
         
-        if (TryRestrictContentMovement(localCursor - _dragCurPosition))
+        if (!IsDragValid(localCursor - _dragCurPosition))
         {
-            Vector2 rubberedPos = GetRubberContentPositionOnDrag(eventData);
+            Vector2 restrictedPos = GetRestrictedContentPositionOnDrag(eventData);
             
-            _contentPos = rubberedPos;
-
             _needRunBack = true;
 
-            SetContentAnchoredPosition(_contentPos);
+            SetContentAnchoredPosition(restrictedPos);
 
             return;
         }
 
-        _needRunBack = false;
-        
         UpdateBounds();
         
+        _needRunBack = false;
+
         _lastDragDelta = localCursor - _dragCurPosition;
 
-        Vector2 dragDelta = localCursor - _dragStartingPosition;
-
-        Vector2 position = _contentStartPos + dragDelta;
-        
         _dragCurPosition = localCursor;
         
-        SetContentAnchoredPosition(position);
+        SetContentAnchoredPosition(CalculateContentPos(localCursor));
 
         UpdateItems(_lastDragDelta);
-        
-        _contentPos = content.anchoredPosition;
     }
 
     public override void OnEndDrag(PointerEventData eventData)
@@ -187,11 +128,11 @@ public class DynamicScrollRect : ScrollRect
         
         Vector2 delta = velocity.normalized;
         
-        if (TryRestrictContentMovement(delta))
+        if (!IsDragValid(delta))
         {
-            _contentPos = GetRubberContentPositionOnScroll(delta);
+            Vector2 contentPos = GetRubberContentPositionOnScroll(delta);
             
-            SetContentAnchoredPosition(_contentPos);
+            SetContentAnchoredPosition(contentPos);
             
             if ((velocity * Time.deltaTime).magnitude < 25)
             {
@@ -204,8 +145,6 @@ public class DynamicScrollRect : ScrollRect
         }
         
         UpdateItems(delta);
-        
-        _contentPos = content.anchoredPosition;
     }
 
     #endregion
@@ -226,6 +165,7 @@ public class DynamicScrollRect : ScrollRect
         base.OnDestroy();
     }
 
+    // TODO : Handle Horizontal Movement
     private void UpdateItems(Vector2 delta)
     {
         if (vertical)
@@ -235,48 +175,43 @@ public class DynamicScrollRect : ScrollRect
             if (positiveDelta &&
                 -_Content.GetLastItemPos().y - content.anchoredPosition.y <= viewport.rect.height + _Content.Spacing.y)
             {
-                // Debug.Log($"Positive Delta : {content.anchoredPosition.y} ::: {_Content.GetFirstItemPos().y} ::: {_Content.GetLastItemPos().y}");
-                
                 _Content.AddIntoTail();
             }
 
             if (positiveDelta &&
                 content.anchoredPosition.y - -_Content.GetFirstItemPos().y >= 2 * _Content.ItemHeight + _Content.Spacing.y)
             {
-                _Content.DeleteFirstRow();
+                _Content.DeleteFromHead();
             }
 
             if (!positiveDelta &&
                 content.anchoredPosition.y + _Content.GetFirstItemPos().y <= _Content.ItemHeight + _Content.Spacing.y)
             {
-                // Debug.Log($"Neg Delta Add Item Into Head : {ScrollRect.content.anchoredPosition.y} ::: {_Content.GetFirstItemPos().y} ::: {_Content.GetLastItemPos().y}");
-                
                 _Content.AddIntoHead();
             }
 
             if (!positiveDelta &&
                 -_Content.GetLastItemPos().y - content.anchoredPosition.y >= viewport.rect.height + _Content.ItemHeight + _Content.Spacing.y)
             {
-                // Debug.Log($"Neg Delta Delete Last Row : {ScrollRect.content.anchoredPosition.y} ::: {_Content.GetFirstItemPos().y} ::: {_Content.GetLastItemPos().y}");
-                
-                _Content.DeleteLastRow();
+                _Content.DeleteFromTail();
             }
         }
     }
 
-    private bool TryRestrictContentMovement(Vector2 delta)
+    // TODO :: Handle Horizontal Movement
+    private bool IsDragValid(Vector2 delta)
     {
         if (vertical)
         {
-            bool canRestrict = TryRestrictContentVerticalMovement(delta);
+            bool isDragValid = CheckDragValidVertical(delta);
             
-            return canRestrict;
+            return isDragValid;
         }
         
         return false;
     }
 
-    private bool TryRestrictContentVerticalMovement(Vector2 delta)
+    private bool CheckDragValidVertical(Vector2 delta)
     {
         bool positiveDelta = delta.y > 0;
 
@@ -287,7 +222,7 @@ public class DynamicScrollRect : ScrollRect
             if (!_Content.CanAddNewItemIntoTail() && 
                 content.anchoredPosition.y + viewport.rect.height + lastItemPos.y - _Content.ItemHeight > 0)
             {
-                return true;
+                return false;
             }
         }
         else
@@ -295,14 +230,15 @@ public class DynamicScrollRect : ScrollRect
             if (!_Content.CanAddNewItemIntoHead() &&
                 content.anchoredPosition.y <= 0)
             {
-                return true;
+                return false;
             }
         }
         
-        return false;
+        return true;
     }
 
-    private Vector2 GetRubberContentPositionOnDrag(PointerEventData eventData)
+    // TODO : Handle Vertical Movement
+    private Vector2 GetRestrictedContentPositionOnDrag(PointerEventData eventData)
     {
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             viewRect,
@@ -311,50 +247,45 @@ public class DynamicScrollRect : ScrollRect
 
         Vector2 delta = localCursor - _dragCurPosition;
 
-        float restriction = GetVerticalRestrictionWeight(delta);
-
-        Vector2 dragDelta = localCursor - _dragStartingPosition;
-
-        Vector2 position = _contentStartPos + dragDelta;
+        Vector2 position = CalculateContentPos(localCursor);
         
-        Vector2 weightedPrev = _contentPos * restriction;
-        
-        Vector2 weightedNext = position * (1 - restriction);
-
-        Vector2 res = weightedPrev + weightedNext;
-
         if (vertical)
         {
-            res.x = 0;
+            float restriction = GetVerticalRestrictionWeight(delta);
+
+            Vector2 result = CalculateRestrictedPosition(content.anchoredPosition, position, restriction);
+            
+            result.x = content.anchoredPosition.x;
+            
+            return result;
         }
-        
-        return res;
+
+        return Vector2.zero;
     }
 
+    // TODO : Rename Method
     private Vector2 GetRubberContentPositionOnScroll(Vector2 delta)
     {
         float restriction = GetVerticalRestrictionWeight(delta);
 
         Vector2 deltaPos = velocity * Time.deltaTime;
 
+        Vector2 res = Vector2.zero;
+
         if (vertical)
         {
             deltaPos.x = 0;
-        }
-
-        Vector2 position = content.anchoredPosition + deltaPos;
-
-        Vector2 weightedPrev = _contentPos * restriction;
-
-        Vector2 weightedNext = position * (1 - restriction);
-
-        Vector2 res = weightedPrev + weightedNext;
-
-        if (vertical)
-        {
+            
+            Vector2 curPos = content.anchoredPosition;
+        
+            Vector2 nextPos = curPos + deltaPos;
+            
+            res = CalculateRestrictedPosition(curPos, nextPos, restriction);
+            
             res.x = 0;
         }
-        
+
+        // TODO : create some variable to slow down free movement
         velocity /= 2;
 
         return res;
@@ -397,6 +328,7 @@ public class DynamicScrollRect : ScrollRect
         return restrictionVal;
     }
 
+    // TODO :: Handle Horizontal Movement
     private Vector2 CalculateSnapPosition()
     {
         if (vertical)
@@ -425,14 +357,32 @@ public class DynamicScrollRect : ScrollRect
                 }
             }
         }
-        
-        Debug.Log("check");
-        
+                
         return Vector2.zero;
     }
     
-    #region Run Back Routine
+    private Vector2 CalculateContentPos(Vector2 localCursor)
+    {
+        Vector2 dragDelta = localCursor - _dragStartingPosition;
 
+        Vector2 position = _contentStartPos + dragDelta;
+        
+        return position;
+    }
+    
+    private Vector2 CalculateRestrictedPosition(Vector2 curPos, Vector2 nextPos, float restrictionWeight)
+    {
+        Vector2 weightedPrev = curPos * restrictionWeight;
+        
+        Vector2 weightedNext = nextPos * (1 - restrictionWeight);
+
+        Vector2 result = weightedPrev + weightedNext;
+
+        return result;
+    }
+    
+    // TODO :: Consider Renaming
+    #region Run Back Routine
     private void StartRunBackRoutine()
     {
         StopRunBackRoutine();

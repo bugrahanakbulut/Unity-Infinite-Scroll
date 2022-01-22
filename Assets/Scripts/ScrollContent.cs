@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.UIElements;
 
 // TODO :: automatize visible item count it while considering grid layout
 // TODO :: create new methods for item create and delete to get rid of code duplication of it
@@ -91,14 +90,14 @@ public class ScrollContent : MonoBehaviour
         }
     }
 
-    public void DeleteFirstRow()
+    public void DeleteFromHead()
     {
         int firstRowIndex = (int) _activatedItems[0].GridIndex.y;
         
         DeleteRow(firstRowIndex);
     }
     
-    public void DeleteLastRow()
+    public void DeleteFromTail()
     {
         int lastRowIndex = (int) _activatedItems[_activatedItems.Count - 1].GridIndex.y;
         
@@ -136,8 +135,6 @@ public class ScrollContent : MonoBehaviour
 
     private void DeleteRow(int rowIndex)
     {
-        // Debug.Log($"Row {rowIndex} <color=red>deleted</color>.");
-        
         List<ScrollItem> items = _activatedItems.FindAll(i => (int) i.GridIndex.y == rowIndex);
 
         foreach (ScrollItem item in items)

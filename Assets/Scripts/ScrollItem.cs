@@ -1,6 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 
+// TODO :: Arrange for default usage 
 public class ScrollItem : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _text = null;
