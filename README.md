@@ -1,6 +1,8 @@
 # Unity-Infinite-Scroll
 Unity UI Optimized Scroll Rect to represent large number of entities with less rect transform
 
+![Alt Text](https://github.com/bugrahanakbulut/Unity-Infinite-Scroll/blob/main/Assets/Resources/scroll_infinite.gif)
+
 
 ## For Custom Usage
 
