@@ -642,7 +642,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _content: {fileID: 376881820}
-  _itemCount: 50
+  _itemCount: 4
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -900,6 +900,9 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+  _restrictionSettings:
+    _exceedSizeInPixel: 400
+    _contentDecreaseRate: 0.5
 --- !u!1 &2142003861
 GameObject:
   m_ObjectHideFlags: 0
@@ -986,7 +989,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2142003861}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3ceae9e34dfc45b0bc4a4d0daade957d, type: 3}
+  m_Script: {fileID: 11500000, guid: 9ab72735fcff4768a6af86f857c4f7ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _text: {fileID: 841023563}

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using DynamicScrollRect;
 using UnityEngine;
 
 public class DemoUI : MonoBehaviour
