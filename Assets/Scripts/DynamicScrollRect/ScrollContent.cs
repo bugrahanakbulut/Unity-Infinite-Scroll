@@ -93,11 +93,21 @@ namespace DynamicScrollRect
 
         public Vector2 GetFirstItemPos()
         {
+            if (_activatedItems.Count == 0)
+            {
+                return Vector2.zero;
+            }
+            
             return _activatedItems[0].RectTransform.anchoredPosition;
         }
 
         public Vector2 GetLastItemPos()
         {
+            if (_activatedItems.Count == 0)
+            {
+                return Vector2.zero;
+            }
+            
             return _activatedItems[_activatedItems.Count - 1].RectTransform.anchoredPosition;
         }
 
