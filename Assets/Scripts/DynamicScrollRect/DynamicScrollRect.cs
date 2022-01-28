@@ -15,23 +15,43 @@ namespace DynamicScrollRect
         [SerializeField] [Range(0, 1)] private float _contentDecelerationInOverflow = 0.5f;
         public float ContentDecelerationInOverflow => _contentDecelerationInOverflow;
     }
+    
+    [Serializable] 
+    public class FocusSettings
+    {
+        // offset from top (such as for 0th element, like extra space for top)
+        [SerializeField] private float _negativeOffset = 225;
+        public float NegativeOffset => _negativeOffset;
+
+        // offset for last elements 
+        [SerializeField] private float _positiveOffset = 255;
+        public float PositiveOffset => _positiveOffset;
+
+        [SerializeField] private float _focusDuration = 0.25f;
+        public float FocusDuration => _focusDuration;
+    }
 
     // TODO :: Hidden Rules Between TryRestrictionMovement - GetContentPosition etc.
     public class DynamicScrollRect : ScrollRect
     {
         [SerializeField] private DynamicScrollRestrictionSettings _restrictionSettings = null;
-    
+
+        [SerializeField] private FocusSettings _focusSettings = null;
+        
         private bool _isDragging = false;
 
         private bool _runningBack = false;
         private bool _needRunBack = false;
 
+        private bool _isFocusActive = false;
+        
         private Vector2 _contentStartPos = Vector2.zero;
         private Vector2 _dragStartingPosition = Vector2.zero;
         private Vector2 _dragCurPosition = Vector2.zero;
         private Vector2 _lastDragDelta = Vector2.zero;
 
         private IEnumerator _runBackRoutine;
+        private IEnumerator _focusRoutine;
     
         private ScrollContent _content;
         private ScrollContent _Content
@@ -45,6 +65,25 @@ namespace DynamicScrollRect
 
                 return _content;
             }
+        }
+
+        public void ResetContent()
+        {
+            StopMovement();
+            
+            StopRunBackRoutine();
+            
+            content.anchoredPosition = Vector2.zero;
+        }
+
+        public void StartFocus(ScrollItem focusItem)
+        {
+            StartFocusItemRoutine(focusItem);
+        }
+
+        public void StopFocus()
+        {
+            StopFocusItemRoutine();
         }
 
         #region Event Callbacks
@@ -67,7 +106,7 @@ namespace DynamicScrollRect
 
             _dragCurPosition = _dragStartingPosition;
         }
-    
+
         public override void OnDrag(PointerEventData eventData)
         {
             if (!_isDragging)
@@ -135,7 +174,7 @@ namespace DynamicScrollRect
 
         private void OnScrollRectValueChanged(Vector2 val)
         {
-            if (_runningBack || _isDragging)
+            if (_runningBack || _isDragging || _isFocusActive)
             {
                 return;
             }
@@ -170,7 +209,8 @@ namespace DynamicScrollRect
             onValueChanged.AddListener(OnScrollRectValueChanged);
 
             // Currently not support vertical and horizontal movement at the same time
-            horizontal = !vertical;
+            vertical = true;
+            horizontal = false;
         
             base.Awake();
         }
@@ -183,6 +223,7 @@ namespace DynamicScrollRect
         }
 
         // TODO : Handle Horizontal Movement
+
         private void UpdateItems(Vector2 delta)
         {
             if (vertical)
@@ -216,6 +257,7 @@ namespace DynamicScrollRect
         }
 
         // TODO :: Handle Horizontal Movement
+
         private bool IsDragValid(Vector2 delta)
         {
             if (vertical)
@@ -255,6 +297,7 @@ namespace DynamicScrollRect
         }
 
         // TODO : Handle Horizontal Movement
+
         private Vector2 GetRestrictedContentPositionOnDrag(PointerEventData eventData)
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
@@ -281,6 +324,7 @@ namespace DynamicScrollRect
         }
 
         // TODO : Handle Horizontal Movement
+
         private Vector2 GetRestrictedContentPositionOnScroll(Vector2 delta)
         {
             float restriction = GetVerticalRestrictionWeight(delta);
@@ -311,7 +355,8 @@ namespace DynamicScrollRect
         {
             bool positiveDelta = delta.y > 0;
 
-            float maxLimit = _restrictionSettings.ContentOverflowRange;
+            // insert focus offset +200
+            float maxLimit = _restrictionSettings.ContentOverflowRange + 200;
 
             if (positiveDelta)
             {
@@ -345,6 +390,7 @@ namespace DynamicScrollRect
         }
 
         // TODO :: Handle Horizontal Movement
+
         private Vector2 CalculateSnapPosition()
         {
             if (vertical)
@@ -376,7 +422,7 @@ namespace DynamicScrollRect
                 
             return Vector2.zero;
         }
-    
+
         private Vector2 CalculateContentPos(Vector2 localCursor)
         {
             Vector2 dragDelta = localCursor - _dragStartingPosition;
@@ -385,7 +431,7 @@ namespace DynamicScrollRect
         
             return position;
         }
-    
+
         private Vector2 CalculateRestrictedPosition(Vector2 curPos, Vector2 nextPos, float restrictionWeight)
         {
             Vector2 weightedPrev = curPos * restrictionWeight;
@@ -396,9 +442,11 @@ namespace DynamicScrollRect
 
             return result;
         }
-    
+
         // TODO :: Consider Renaming
+
         #region Run Back Routine
+
         private void StartRunBackRoutine()
         {
             StopRunBackRoutine();
@@ -445,7 +493,81 @@ namespace DynamicScrollRect
         
             _runningBack = false;
         }
-    
+
+        #endregion
+
+        #region Focus
+
+        // TODO : Handle Horizontal
+        private Vector2 GetFocusPosition(ScrollItem focusItem)
+        {
+            if (vertical)
+            {
+                // focus item above the viewport
+                if (content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y > 0)
+                {
+                    float diff = content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y +
+                                 _focusSettings.PositiveOffset;
+                    
+                    return content.anchoredPosition - new Vector2(0, diff);
+                }
+
+                // focus item under the viewport
+                if (viewport.rect.height - content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y - _Content.ItemHeight < 0)
+                {
+                    float diff = -content.anchoredPosition.y - viewport.rect.height +
+                                 -focusItem.RectTransform.anchoredPosition.y + _Content.ItemHeight + _focusSettings.PositiveOffset;
+
+                    return content.anchoredPosition + new Vector2(0, diff);
+                }
+            }
+
+            return content.anchoredPosition;
+        }
+
+        private void StartFocusItemRoutine(ScrollItem scrollItem)
+        {
+            StopFocusItemRoutine();
+
+            _focusRoutine = FocusProgress(GetFocusPosition(scrollItem));
+
+            StartCoroutine(_focusRoutine);
+        }
+
+        private void StopFocusItemRoutine()
+        {
+            if (_focusRoutine != null)
+            {
+                StopCoroutine(_focusRoutine);
+            }
+
+            _isFocusActive = false;
+        }
+
+        private IEnumerator FocusProgress(Vector2 focusPos)
+        {
+            _isFocusActive = true;
+
+            float timePassed = 0;
+
+            Vector2 startPos = content.anchoredPosition;
+
+            while (timePassed < _focusSettings.FocusDuration)
+            {
+                timePassed += Time.deltaTime;
+                
+                Vector2 pos = Vector2.Lerp(startPos, focusPos, timePassed / _focusSettings.FocusDuration);
+            
+                SetContentAnchoredPosition(pos);
+                
+                yield return null;
+            }
+            
+            SetContentAnchoredPosition(focusPos);
+            
+            _isFocusActive = false;
+        }
+        
         #endregion
     }
 }

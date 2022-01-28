@@ -10,14 +10,14 @@ namespace DynamicScrollRect
         [SerializeField] private Vector2 _spacing = Vector2.zero;
         public Vector2 Spacing => _spacing;
 
-        [Tooltip("it will fill content rect in main axis(horizontal or vertical) automatically simply ignores _fixedItemCount")]
+        [Tooltip("it will fill content rect in main axis(horizontal or vertical) automatically. Simply ignores _fixedItemCount")]
         [SerializeField] private bool _fillContent = false;
         
         [Tooltip("if scroll is vertical it is item count in each row vice versa for horizontal")]
         [Min(1)][SerializeField] private int _fixedItemCount = 1;
 
         private DynamicScrollRect _dynamicScrollRect;
-        private DynamicScrollRect DynamicScrollRect
+        public DynamicScrollRect DynamicScrollRect
         {
             get
             {
@@ -56,18 +56,33 @@ namespace DynamicScrollRect
         private List<ScrollItem> _deactivatedItems = new List<ScrollItem>();
 
         private List<ScrollItemData> _datum;
+        public List<ScrollItemData> Datum => _datum;
 
         private float _itemWidth => _ReferenceItem.RectTransform.rect.width;
         public float ItemWidth => _itemWidth;
     
         private float _itemHeight => _ReferenceItem.RectTransform.rect.height;
         public float ItemHeight => _itemHeight;
-    
+        
+        public Action<ScrollItem> OnItemActivated { get; set; }
+        
+        public Action<ScrollItem> OnItemDeactivated { get; set; }
+
         public void InitScrollContent(List<ScrollItemData> contentDatum)
         {
             if (DynamicScrollRect.vertical)
             {
                 InitItemsVertical(contentDatum);
+            }
+        }
+
+        public void ClearContent()
+        {
+            List<ScrollItem> activatedItems = new List<ScrollItem>(_activatedItems);
+
+            foreach (ScrollItem item in activatedItems)
+            {
+                DeactivateItem(item);
             }
         }
 
@@ -160,14 +175,14 @@ namespace DynamicScrollRect
             {
                 for (int row = 0; row < initialGridSize.x; row++)
                 {
-                    ActivateItem(itemCount);
-                
-                    itemCount++;
-                
                     if (itemCount == contentDatum.Count)
                     {
                         return;
                     }
+                    
+                    ActivateItem(itemCount);
+                
+                    itemCount++;
                 }
             }
         }
@@ -208,6 +223,11 @@ namespace DynamicScrollRect
 
         private void AddItemToTail()
         {
+            if (!CanAddNewItemIntoTail())
+            {
+                return;
+            }
+            
             int itemIndex = _activatedItems[_activatedItems.Count - 1].Index + 1;
 
             if (itemIndex == _datum.Count)
@@ -220,6 +240,11 @@ namespace DynamicScrollRect
 
         private void AddItemToHead()
         {
+            if (!CanAddNewItemIntoHead())
+            {
+                return;
+            }
+            
             int itemIndex = _activatedItems[0].Index - 1;
 
             if (itemIndex < 0)
@@ -248,7 +273,7 @@ namespace DynamicScrollRect
 
                 _deactivatedItems.Remove(scrollItem);
             }
-
+            
             scrollItem.gameObject.name = $"{gridPos.x}_{gridPos.y}";
         
             scrollItem.RectTransform.anchoredPosition = anchoredPos;
@@ -269,6 +294,8 @@ namespace DynamicScrollRect
         
             scrollItem.Activated();
         
+            OnItemActivated?.Invoke(scrollItem);
+            
             return scrollItem;
         }
 
@@ -279,6 +306,8 @@ namespace DynamicScrollRect
             _deactivatedItems.Add(item);
         
             item.Deactivated();
+            
+            OnItemDeactivated?.Invoke(item);
         }
 
         private ScrollItem CreateNewScrollItem()
