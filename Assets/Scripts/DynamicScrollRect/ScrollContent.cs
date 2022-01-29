@@ -158,6 +158,18 @@ namespace DynamicScrollRect
             DeleteRow(lastRowIndex);
         }
 
+        // TODO : Handle Horizontal Layout
+        public bool AtTheEndOfContent(ScrollItem item)
+        {
+            if (DynamicScrollRect.vertical)
+            {
+                return !CanAddNewItemIntoTail() && item.RectTransform.anchoredPosition.y ==
+                    _activatedItems[_activatedItems.Count - 1].RectTransform.anchoredPosition.y;
+            }
+
+            return false;
+        }
+
         private void Awake()
         {
             _ReferenceItem.gameObject.SetActive(false);

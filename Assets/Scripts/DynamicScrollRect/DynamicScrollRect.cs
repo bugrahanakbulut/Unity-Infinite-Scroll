@@ -19,13 +19,8 @@ namespace DynamicScrollRect
     [Serializable] 
     public class FocusSettings
     {
-        // offset from top (such as for 0th element, like extra space for top)
-        [SerializeField] private float _negativeOffset = 225;
-        public float NegativeOffset => _negativeOffset;
-
-        // offset for last elements 
-        [SerializeField] private float _positiveOffset = 255;
-        public float PositiveOffset => _positiveOffset;
+        [SerializeField] private float _focusOffset = 0;
+        public float FocusOffset =>  _focusOffset;
 
         [SerializeField] private float _focusDuration = 0.25f;
         public float FocusDuration => _focusDuration;
@@ -81,7 +76,7 @@ namespace DynamicScrollRect
             StartFocusItemRoutine(focusItem);
         }
 
-        public void StopFocus()
+        public void CancelFocus()
         {
             StopFocusItemRoutine();
         }
@@ -105,6 +100,8 @@ namespace DynamicScrollRect
                 out _dragStartingPosition);
 
             _dragCurPosition = _dragStartingPosition;
+            
+            CancelFocus();
         }
 
         public override void OnDrag(PointerEventData eventData)
@@ -207,7 +204,7 @@ namespace DynamicScrollRect
             movementType = MovementType.Unrestricted;
 
             onValueChanged.AddListener(OnScrollRectValueChanged);
-
+            
             // Currently not support vertical and horizontal movement at the same time
             vertical = true;
             horizontal = false;
@@ -355,7 +352,6 @@ namespace DynamicScrollRect
         {
             bool positiveDelta = delta.y > 0;
 
-            // insert focus offset +200
             float maxLimit = _restrictionSettings.ContentOverflowRange;
 
             if (positiveDelta)
@@ -443,7 +439,7 @@ namespace DynamicScrollRect
             return result;
         }
 
-        // TODO :: Consider Renaming
+        // TODO : Consider Renaming
 
         #region Run Back Routine
 
@@ -503,22 +499,40 @@ namespace DynamicScrollRect
         {
             if (vertical)
             {
+                Vector2 contentPos = content.anchoredPosition;
+                
                 // focus item above the viewport
                 if (content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y > 0)
                 {
-                    float diff = content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y +
-                                 _focusSettings.PositiveOffset;
+                    float diff = contentPos.y + focusItem.RectTransform.anchoredPosition.y + _focusSettings.FocusOffset;
                     
-                    return content.anchoredPosition - new Vector2(0, diff);
+                    Vector2 focusPos = contentPos - new Vector2(0, diff);
+
+                    focusPos.y = Mathf.Max(focusPos.y, 0);
+                    
+                    return focusPos;
                 }
 
                 // focus item under the viewport
                 if (viewport.rect.height - content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y - _Content.ItemHeight < 0)
                 {
-                    float diff = -content.anchoredPosition.y - viewport.rect.height +
-                                 -focusItem.RectTransform.anchoredPosition.y + _Content.ItemHeight + _focusSettings.PositiveOffset;
+                    float diff = -contentPos.y - viewport.rect.height +
+                                 -focusItem.RectTransform.anchoredPosition.y + _Content.ItemHeight + _focusSettings.FocusOffset;
 
-                    return content.anchoredPosition + new Vector2(0, diff);
+
+                    if (_Content.AtTheEndOfContent(focusItem))
+                    {
+                        return CalculateSnapPosition();
+                    }
+                    
+                    Vector2 focusPos = contentPos + new Vector2(0, diff);
+
+                    float contentMovementLimit = contentPos.y + _Content.GetLastItemPos().y - _Content.ItemHeight +
+                                                   viewport.rect.height;
+
+                    focusPos.y = Mathf.Max(focusPos.y, contentMovementLimit);
+
+                    return focusPos;
                 }
             }
 
@@ -557,7 +571,11 @@ namespace DynamicScrollRect
                 timePassed += Time.deltaTime;
                 
                 Vector2 pos = Vector2.Lerp(startPos, focusPos, timePassed / _focusSettings.FocusDuration);
-            
+
+                Vector2 delta = pos - content.anchoredPosition;
+                
+                UpdateItems(delta);
+                
                 SetContentAnchoredPosition(pos);
                 
                 yield return null;
