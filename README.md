@@ -44,7 +44,8 @@ public class CustomScrollItem : ScrollItem<CustomScrollItemData>
 
 This project still in under development so there might be some naughty bugs :D. If you met some of them or you need to implement any feature top of it, and if you get stuck please feel free to contact. There are some feature I will be implement in near future :
     
-- Horizontal Movement Support [wip]
+- Focus Item [wip]
+- Horizontal Movement Support
 - Handling changes in data throughout application life-time
     
     
