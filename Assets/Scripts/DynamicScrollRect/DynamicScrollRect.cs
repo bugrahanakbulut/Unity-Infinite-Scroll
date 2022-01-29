@@ -514,7 +514,7 @@ namespace DynamicScrollRect
                 }
 
                 // focus item under the viewport
-                if (viewport.rect.height - content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y - _Content.ItemHeight < 0)
+                if (viewport.rect.height + (content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y - _Content.ItemHeight) < 0)
                 {
                     float diff = -contentPos.y - viewport.rect.height +
                                  -focusItem.RectTransform.anchoredPosition.y + _Content.ItemHeight + _focusSettings.FocusOffset;

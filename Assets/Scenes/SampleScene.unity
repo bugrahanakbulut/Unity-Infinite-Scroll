@@ -904,8 +904,8 @@ MonoBehaviour:
     _contentOverflowRange: 400
     _contentDecelerationInOverflow: 0.25
   _focusSettings:
-    _focusOffset: 50
-    _focusDuration: 1
+    _focusOffset: 100
+    _focusDuration: 0.25
 --- !u!1 &2142003861
 GameObject:
   m_ObjectHideFlags: 0
