@@ -234,7 +234,7 @@ namespace DynamicScrollRect
                 }
 
                 if (positiveDelta &&
-                    content.anchoredPosition.y - -_Content.GetFirstItemPos().y >= 2 * _Content.ItemHeight + _Content.Spacing.y)
+                    content.anchoredPosition.y - -_Content.GetFirstItemPos().y >= (2 * _Content.ItemHeight) + _Content.Spacing.y)
                 {
                     _Content.DeleteFromHead();
                 }
@@ -518,8 +518,7 @@ namespace DynamicScrollRect
                 {
                     float diff = -contentPos.y - viewport.rect.height +
                                  -focusItem.RectTransform.anchoredPosition.y + _Content.ItemHeight + _focusSettings.FocusOffset;
-
-
+                    
                     if (_Content.AtTheEndOfContent(focusItem))
                     {
                         return CalculateSnapPosition();

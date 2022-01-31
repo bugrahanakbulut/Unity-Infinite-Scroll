@@ -19,5 +19,4 @@ public class ScrollItemDefault : ScrollItem<ScrollItemData>
         
         base.InitItemData(data);
     }
-    
 }

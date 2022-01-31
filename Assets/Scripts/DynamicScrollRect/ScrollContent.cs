@@ -103,7 +103,7 @@ namespace DynamicScrollRect
                 return false;
             }
         
-            return _activatedItems[0].Index - 1 > 0;
+            return _activatedItems[0].Index - 1 >= 0;
         }
 
         public Vector2 GetFirstItemPos()
@@ -215,8 +215,7 @@ namespace DynamicScrollRect
 
                     return new Vector2Int(horizontalItemCount, verticalItemCount);
                 }
-                
-                
+
                 return new Vector2Int(_fixedItemCount, verticalItemCount);
             }
             
@@ -350,8 +349,8 @@ namespace DynamicScrollRect
         private Vector2 GetAnchoredPosition(Vector2 gridPosition)
         {
             return new Vector2(
-                gridPosition.x * _itemWidth + gridPosition.x * _spacing.x,
-                -gridPosition.y * _itemHeight - gridPosition.y * _spacing.y);
+                (gridPosition.x * _itemWidth) + (gridPosition.x * _spacing.x),
+                (-gridPosition.y * _itemHeight) - (gridPosition.y * _spacing.y));
         }
     }
 }
