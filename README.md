@@ -45,7 +45,7 @@ public class CustomScrollItem : ScrollItem<CustomScrollItemData>
 Scroll rect can make focus easily when entities outside of the viewport. You can add offset to focus or determine focus duration from focus settings on DynamicScrollRect component.
     
 <p align="center">
-    <img src="https://github.com/bugrahanakbulut/Unity-Infinite-Scroll/blob/feature/Focus-Item/Assets/Resources/scroll_focus.gif" alt="animated" />
+    <img src="https://github.com/bugrahanakbulut/Unity-Infinite-Scroll/blob/main/Assets/Resources/scroll_focus.gif" alt="animated" />
 </p>
    
     
