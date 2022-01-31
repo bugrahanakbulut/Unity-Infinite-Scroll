@@ -1,3 +1,5 @@
+[![CodeFactor](https://www.codefactor.io/repository/github/bugrahanakbulut/unity-infinite-scroll/badge/main)](https://www.codefactor.io/repository/github/bugrahanakbulut/unity-infinite-scroll/overview/main)
+
 # Unity-Infinite-Scroll
 Unity UI Optimized Scroll Rect to represent large number of entities with less rect transform. Currently only vertical scroll supported.
 
