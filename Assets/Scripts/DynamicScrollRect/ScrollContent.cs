@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace DynamicScrollRect
 {
@@ -70,9 +71,16 @@ namespace DynamicScrollRect
 
         public void InitScrollContent(List<ScrollItemData> contentDatum)
         {
+            _datum = contentDatum;
+            
             if (DynamicScrollRect.vertical)
             {
                 InitItemsVertical(contentDatum);
+            }
+
+            if (DynamicScrollRect.horizontal)
+            {
+                InitItemsHorizontal(contentDatum);
             }
         }
 
@@ -163,8 +171,8 @@ namespace DynamicScrollRect
         {
             if (DynamicScrollRect.vertical)
             {
-                return !CanAddNewItemIntoTail() && item.RectTransform.anchoredPosition.y ==
-                    _activatedItems[_activatedItems.Count - 1].RectTransform.anchoredPosition.y;
+                return !CanAddNewItemIntoTail() && 
+                       item.RectTransform.anchoredPosition.y == _activatedItems[_activatedItems.Count - 1].RectTransform.anchoredPosition.y;
             }
 
             return false;
@@ -177,8 +185,6 @@ namespace DynamicScrollRect
 
         private void InitItemsVertical(List<ScrollItemData> contentDatum)
         {
-            _datum = contentDatum;
-        
             int itemCount = 0;
 
             Vector2Int initialGridSize = CalculateInitialGridSize();
@@ -199,6 +205,11 @@ namespace DynamicScrollRect
             }
         }
 
+        private void InitItemsHorizontal(List<ScrollItemData> contentDatum)
+        {
+            Vector2Int initialGridSize = CalculateInitialGridSize();
+        }
+
         private Vector2Int CalculateInitialGridSize()
         {
             Vector2 contentSize = DynamicScrollRect.content.rect.size;
@@ -217,6 +228,11 @@ namespace DynamicScrollRect
                 }
 
                 return new Vector2Int(_fixedItemCount, verticalItemCount);
+            }
+
+            if (DynamicScrollRect.horizontal)
+            {
+                
             }
             
             return Vector2Int.zero;
@@ -345,7 +361,7 @@ namespace DynamicScrollRect
 
             return Vector2.zero;
         }
-
+        
         private Vector2 GetAnchoredPosition(Vector2 gridPosition)
         {
             return new Vector2(

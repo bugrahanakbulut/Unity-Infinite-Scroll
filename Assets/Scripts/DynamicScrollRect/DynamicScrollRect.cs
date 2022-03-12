@@ -205,9 +205,7 @@ namespace DynamicScrollRect
 
             onValueChanged.AddListener(OnScrollRectValueChanged);
             
-            // Currently not support vertical and horizontal movement at the same time
-            vertical = true;
-            horizontal = false;
+            vertical = !horizontal;
         
             base.Awake();
         }
@@ -259,9 +257,12 @@ namespace DynamicScrollRect
         {
             if (vertical)
             {
-                bool isDragValid = CheckDragValidVertical(delta);
+                return CheckDragValidVertical(delta);
+            }
             
-                return isDragValid;
+            if (horizontal)
+            {
+                return CheckDragValidHorizontal(delta);
             }
         
             return false;
@@ -293,8 +294,12 @@ namespace DynamicScrollRect
             return true;
         }
 
-        // TODO : Handle Horizontal Movement
+        private bool CheckDragValidHorizontal(Vector2 delta)
+        {
+            return false;
+        }
 
+        // TODO : Handle Horizontal Movement
         private Vector2 GetRestrictedContentPositionOnDrag(PointerEventData eventData)
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
@@ -321,7 +326,6 @@ namespace DynamicScrollRect
         }
 
         // TODO : Handle Horizontal Movement
-
         private Vector2 GetRestrictedContentPositionOnScroll(Vector2 delta)
         {
             float restriction = GetVerticalRestrictionWeight(delta);
@@ -386,7 +390,6 @@ namespace DynamicScrollRect
         }
 
         // TODO :: Handle Horizontal Movement
-
         private Vector2 CalculateSnapPosition()
         {
             if (vertical)
