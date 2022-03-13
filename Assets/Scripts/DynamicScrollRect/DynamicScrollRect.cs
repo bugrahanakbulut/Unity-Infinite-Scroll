@@ -276,6 +276,7 @@ namespace DynamicScrollRect
             {
                 Vector2 lastItemPos = _Content.GetLastItemPos();
             
+                // Calculate local position of last item's end position in viewport rect
                 if (!_Content.CanAddNewItemIntoTail() && 
                     content.anchoredPosition.y + viewport.rect.height + lastItemPos.y - _Content.ItemHeight > 0)
                 {
@@ -296,7 +297,28 @@ namespace DynamicScrollRect
 
         private bool CheckDragValidHorizontal(Vector2 delta)
         {
-            return false;
+            bool positiveDelta = delta.x > 0;
+
+            if (positiveDelta)
+            {
+                if (_Content.CanAddNewItemIntoHead() && content.anchoredPosition.x <= 0)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                Vector2 lastItemPos = _Content.GetLastItemPos();
+
+                // Calculate local position of last item's end position in viewport rect 
+                if (!_Content.CanAddNewItemIntoTail() &&
+                    content.anchoredPosition.x + viewport.rect.width + lastItemPos.x + _Content.ItemWidth > 0)
+                {
+                    return false;
+                }
+            }
+            
+            return true;
         }
 
         // TODO : Handle Horizontal Movement
