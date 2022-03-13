@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 using JetBrains.Annotations;
+using UnityEditor.UIElements;
 
 namespace DynamicScrollRect
 {
@@ -207,7 +208,24 @@ namespace DynamicScrollRect
 
         private void InitItemsHorizontal(List<ScrollItemData> contentDatum)
         {
+            int itemCount = 0;
+
             Vector2Int initialGridSize = CalculateInitialGridSize();
+
+            for (int col = 0; col < initialGridSize.y; col++)
+            {
+                for (int row = 0; row < initialGridSize.x; row++)
+                {
+                    if (itemCount == contentDatum.Count)
+                    {
+                        return;
+                    }
+                    
+                    ActivateItem(itemCount);
+                
+                    itemCount++;
+                }
+            }
         }
 
         private Vector2Int CalculateInitialGridSize()
@@ -223,8 +241,6 @@ namespace DynamicScrollRect
                     int horizontalItemCount = (int) ((contentSize.x + _spacing.x) / (ItemWidth + _spacing.x));
 
                     _fixedItemCount = horizontalItemCount;
-
-                    return new Vector2Int(horizontalItemCount, verticalItemCount);
                 }
 
                 return new Vector2Int(_fixedItemCount, verticalItemCount);
@@ -232,7 +248,16 @@ namespace DynamicScrollRect
 
             if (DynamicScrollRect.horizontal)
             {
-                
+                int horizontalItemCount = 4 + (int) (contentSize.x / (ItemWidth + _spacing.x));
+
+                if (_fillContent)
+                {
+                    int verticalItemCount = (int) ((contentSize.y + _spacing.y) / (ItemHeight + _spacing.y));
+
+                    _fixedItemCount = verticalItemCount;
+                }
+
+                return new Vector2Int(horizontalItemCount, _fixedItemCount);
             }
             
             return Vector2Int.zero;
@@ -347,16 +372,19 @@ namespace DynamicScrollRect
             return scrollItem;
         }
 
-        // TODO : Handle Horizontal Layout
         private Vector2 GetGridPosition(int itemIndex)
         {
+            int col = itemIndex / _fixedItemCount;
+            int row = itemIndex - (col * _fixedItemCount);
+            
             if (DynamicScrollRect.vertical)
             {
-                int col = itemIndex / _fixedItemCount;
-
-                int row = itemIndex - (col * _fixedItemCount);
-            
                 return new Vector2(row, col);
+            }
+
+            if (DynamicScrollRect.horizontal)
+            {
+                return new Vector2(col, row);
             }
 
             return Vector2.zero;
