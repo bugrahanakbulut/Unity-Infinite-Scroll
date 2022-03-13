@@ -154,17 +154,36 @@ namespace DynamicScrollRect
         // TODO : Handle Horizontal Layout
         public void DeleteFromHead()
         {
-            int firstRowIndex = (int) _activatedItems[0].GridIndex.y;
-        
-            DeleteRow(firstRowIndex);
+            if (DynamicScrollRect.vertical)
+            {
+                int firstRowIndex = (int) _activatedItems[0].GridIndex.y;
+
+                DeleteRow(firstRowIndex);
+            }
+
+            if (DynamicScrollRect.horizontal)
+            {
+                int firstColIndex = (int) _activatedItems[0].GridIndex.x;
+
+                DeleteColumn(firstColIndex);
+            }
         }
-    
-        // TODO : Handle Horizontal Layout
+        
         public void DeleteFromTail()
         {
-            int lastRowIndex = (int) _activatedItems[_activatedItems.Count - 1].GridIndex.y;
-        
-            DeleteRow(lastRowIndex);
+            if (DynamicScrollRect.vertical)
+            {
+                int lastRowIndex = (int) _activatedItems[_activatedItems.Count - 1].GridIndex.y;
+
+                DeleteRow(lastRowIndex);
+            }
+            
+            if (DynamicScrollRect.horizontal)
+            {
+                int lastColIndex = (int) _activatedItems[_activatedItems.Count - 1].GridIndex.x;
+
+                DeleteColumn(lastColIndex);
+            }
         }
 
         // TODO : Handle Horizontal Layout
@@ -266,6 +285,16 @@ namespace DynamicScrollRect
         private void DeleteRow(int rowIndex)
         {
             List<ScrollItem> items = _activatedItems.FindAll(i => (int) i.GridIndex.y == rowIndex);
+
+            foreach (ScrollItem item in items)
+            {
+                DeactivateItem(item);
+            }
+        }
+
+        private void DeleteColumn(int colIndex)
+        {
+            List<ScrollItem> items = _activatedItems.FindAll(i => (int) i.GridIndex.x == colIndex);
 
             foreach (ScrollItem item in items)
             {

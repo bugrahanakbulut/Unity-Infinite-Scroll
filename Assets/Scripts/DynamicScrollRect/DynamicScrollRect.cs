@@ -267,7 +267,7 @@ namespace DynamicScrollRect
                 }
 
                 if (!positiveDelta &&
-                    _content.GetLastItemPos().x + content.anchoredPosition.x >= viewport.rect.width + _Content.Spacing.x)
+                    _content.GetLastItemPos().x + content.anchoredPosition.x <= viewport.rect.width + _Content.Spacing.x)
                 {
                     _Content.AddIntoTail();
                 }
