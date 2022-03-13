@@ -249,9 +249,36 @@ namespace DynamicScrollRect
                     _Content.DeleteFromTail();
                 }
             }
-        }
 
-        // TODO :: Handle Horizontal Movement
+            if (horizontal)
+            {
+                bool positiveDelta = delta.x > 0;
+
+                if (positiveDelta &&
+                    _Content.GetFirstItemPos().x + content.anchoredPosition.x <= _Content.ItemWidth + _Content.Spacing.x)
+                {
+                    _Content.AddIntoHead();
+                }
+
+                if (positiveDelta &&
+                    _Content.GetLastItemPos().x + content.anchoredPosition.x >= viewport.rect.width + _Content.ItemWidth + _Content.Spacing.x)
+                {
+                    _Content.DeleteFromTail();
+                }
+
+                if (!positiveDelta &&
+                    _content.GetLastItemPos().x + content.anchoredPosition.x >= viewport.rect.width + _Content.Spacing.x)
+                {
+                    _Content.AddIntoTail();
+                }
+
+                if (!positiveDelta &&
+                    _content.GetFirstItemPos().x + content.anchoredPosition.x >= (2 * _Content.ItemWidth) + _Content.Spacing.x)
+                {
+                    _Content.DeleteFromHead();
+                }
+            }
+        }
 
         private bool IsDragValid(Vector2 delta)
         {
