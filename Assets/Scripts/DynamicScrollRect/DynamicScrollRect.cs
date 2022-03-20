@@ -617,18 +617,17 @@ namespace DynamicScrollRect
         }
 
         #endregion
-
+        
         #region Focus
-
-        // TODO : Handle Horizontal
+        
         private Vector2 GetFocusPosition(ScrollItem focusItem)
         {
+            Vector2 contentPos = content.anchoredPosition;
+            
             if (vertical)
             {
-                Vector2 contentPos = content.anchoredPosition;
-                
                 // focus item above the viewport
-                if (content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y > 0)
+                if (contentPos.y + focusItem.RectTransform.anchoredPosition.y > 0)
                 {
                     float diff = contentPos.y + focusItem.RectTransform.anchoredPosition.y + _focusSettings.FocusOffset;
                     
@@ -640,7 +639,7 @@ namespace DynamicScrollRect
                 }
 
                 // focus item under the viewport
-                if (viewport.rect.height + (content.anchoredPosition.y + focusItem.RectTransform.anchoredPosition.y - _Content.ItemHeight) < 0)
+                if (viewport.rect.height + (contentPos.y + focusItem.RectTransform.anchoredPosition.y - _Content.ItemHeight) < 0)
                 {
                     float diff = -contentPos.y - viewport.rect.height +
                                  -focusItem.RectTransform.anchoredPosition.y + _Content.ItemHeight + _focusSettings.FocusOffset;
@@ -656,6 +655,42 @@ namespace DynamicScrollRect
                                                    viewport.rect.height;
 
                     focusPos.y = Mathf.Max(focusPos.y, contentMovementLimit);
+
+                    return focusPos;
+                }
+            }
+
+            if (horizontal)
+            {
+                // focus item at the left of the viewport
+                if (contentPos.x + focusItem.RectTransform.anchoredPosition.x < 0)
+                {
+                    float diff = contentPos.x + focusItem.RectTransform.anchoredPosition.x - _focusSettings.FocusOffset;
+
+                    Vector2 focusPos = contentPos - new Vector2(0, diff);
+
+                    focusPos.x = Mathf.Max(focusPos.x, 0);
+
+                    return focusPos;
+                }
+
+                // focus item at the right of the viewport
+                if (viewport.rect.width + (-contentPos.x - focusItem.RectTransform.anchoredPosition.x - _Content.ItemWidth) < 0)
+                {
+                    float diff = -viewport.rect.width + contentPos.x + focusItem.RectTransform.anchoredPosition.x 
+                                 + _Content.ItemWidth - _focusSettings.FocusOffset;
+
+                    if (_Content.AtTheEndOfContent(focusItem))
+                    {
+                        return CalculateSnapPosition();
+                    }
+
+                    Vector2 focusPos = contentPos + new Vector2(0, diff);
+
+                    float contentMoveLimit = -contentPos.x - _Content.GetLastItemPos().x + _Content.ItemWidth +
+                                             -viewport.rect.width;
+
+                    focusPos.x = Mathf.Max(focusPos.x, contentMoveLimit);
 
                     return focusPos;
                 }
