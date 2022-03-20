@@ -1,8 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using System.Collections.Generic;
-using JetBrains.Annotations;
-using UnityEditor.UIElements;
 
 namespace DynamicScrollRect
 {
@@ -151,7 +149,6 @@ namespace DynamicScrollRect
             }
         }
 
-        // TODO : Handle Horizontal Layout
         public void DeleteFromHead()
         {
             if (DynamicScrollRect.vertical)
@@ -185,14 +182,19 @@ namespace DynamicScrollRect
                 DeleteColumn(lastColIndex);
             }
         }
-
-        // TODO : Handle Horizontal Layout
+        
         public bool AtTheEndOfContent(ScrollItem item)
         {
             if (DynamicScrollRect.vertical)
             {
                 return !CanAddNewItemIntoTail() && 
                        item.RectTransform.anchoredPosition.y == _activatedItems[_activatedItems.Count - 1].RectTransform.anchoredPosition.y;
+            }
+
+            if (DynamicScrollRect.horizontal)
+            {
+                return !CanAddNewItemIntoTail() &&
+                       item.RectTransform.anchoredPosition.x == _activatedItems[_activatedItems.Count - 1].RectTransform.anchoredPosition.x;
             }
 
             return false;

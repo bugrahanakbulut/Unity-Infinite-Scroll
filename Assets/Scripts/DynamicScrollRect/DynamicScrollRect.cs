@@ -216,9 +216,7 @@ namespace DynamicScrollRect
         
             base.OnDestroy();
         }
-
-        // TODO : Handle Horizontal Movement
-
+        
         private void UpdateItems(Vector2 delta)
         {
             if (vertical)
@@ -267,13 +265,13 @@ namespace DynamicScrollRect
                 }
 
                 if (!positiveDelta &&
-                    _content.GetLastItemPos().x + content.anchoredPosition.x <= viewport.rect.width + _Content.Spacing.x)
+                    _Content.GetLastItemPos().x + content.anchoredPosition.x <= viewport.rect.width + _Content.Spacing.x)
                 {
                     _Content.AddIntoTail();
                 }
 
                 if (!positiveDelta &&
-                    _content.GetFirstItemPos().x + content.anchoredPosition.x >= (2 * _Content.ItemWidth) + _Content.Spacing.x)
+                    _Content.GetFirstItemPos().x + content.anchoredPosition.x >= (2 * _Content.ItemWidth) + _Content.Spacing.x)
                 {
                     _Content.DeleteFromHead();
                 }
@@ -328,7 +326,7 @@ namespace DynamicScrollRect
 
             if (positiveDelta)
             {
-                if (_Content.CanAddNewItemIntoHead() && content.anchoredPosition.x <= 0)
+                if (!_Content.CanAddNewItemIntoHead() && content.anchoredPosition.x >= 0)
                 {
                     return false;
                 }
@@ -348,7 +346,6 @@ namespace DynamicScrollRect
             return true;
         }
 
-        // TODO : Handle Horizontal Movement
         private Vector2 GetRestrictedContentPositionOnDrag(PointerEventData eventData)
         {
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
@@ -357,7 +354,7 @@ namespace DynamicScrollRect
                 eventData.pressEventCamera, out Vector2 localCursor);
 
             Vector2 delta = localCursor - _dragCurPosition;
-
+            
             Vector2 position = CalculateContentPos(localCursor);
         
             if (vertical)
@@ -371,13 +368,32 @@ namespace DynamicScrollRect
                 return result;
             }
 
+            if (horizontal)
+            {
+                float restriction = GetHorizontalRestrictionWeight(delta);
+
+                Vector2 result = CalculateRestrictedPosition(content.anchoredPosition, position, restriction);
+
+                result.y = content.anchoredPosition.y;
+
+                return result;
+            }
+            
             return Vector2.zero;
         }
 
-        // TODO : Handle Horizontal Movement
         private Vector2 GetRestrictedContentPositionOnScroll(Vector2 delta)
         {
-            float restriction = GetVerticalRestrictionWeight(delta);
+            float restriction = 0;
+            
+            if (vertical)
+            {
+                restriction = GetVerticalRestrictionWeight(delta);
+            }
+            else
+            {
+                restriction = GetHorizontalRestrictionWeight(delta);
+            }
 
             Vector2 deltaPos = velocity * Time.deltaTime;
 
@@ -438,7 +454,45 @@ namespace DynamicScrollRect
             return restrictionVal;
         }
 
-        // TODO :: Handle Horizontal Movement
+        private float GetHorizontalRestrictionWeight(Vector2 delta)
+        {
+            bool positiveDelta = delta.x > 0;
+            
+            float maxLimit = _restrictionSettings.ContentOverflowRange;
+
+            if (!positiveDelta)
+            {
+                Vector2 lastItemPos = _Content.GetLastItemPos();
+                
+                if (lastItemPos.x <= viewport.rect.width - _Content.ItemWidth)
+                {
+                    float max = lastItemPos.x - maxLimit;
+            
+                    float cur = content.anchoredPosition.x + lastItemPos.x;
+
+                    float diff = cur - max;
+                    
+                    return 1f - Mathf.Clamp(diff / maxLimit, 0, 1);
+                }
+                else
+                {
+                    float max = -(viewport.rect.width - maxLimit - _Content.ItemWidth);
+                
+                    float cur = content.anchoredPosition.x + lastItemPos.x;
+
+                    float diff = cur - max;
+                    
+                    Debug.Log($"{max} {cur}");
+
+                    return 1f - Mathf.Clamp(diff / maxLimit, 0, 1);
+                }
+            }
+            
+            float restrictionVal = Mathf.Clamp(Mathf.Abs(content.anchoredPosition.x) / maxLimit, 0, 1);
+            
+            return restrictionVal;
+        }
+
         private Vector2 CalculateSnapPosition()
         {
             if (vertical)
@@ -455,17 +509,38 @@ namespace DynamicScrollRect
                     {                    
                         return Vector2.zero;
                     }
-                    else
-                    {
-                        float target = -(viewport.rect.height - _Content.ItemHeight);
                     
-                        float cur = content.anchoredPosition.y + lastItemPos.y;
+                    float target = -(viewport.rect.height - _Content.ItemHeight);
+                
+                    float cur = content.anchoredPosition.y + lastItemPos.y;
 
-                        float diff = target - cur;
+                    float diff = target - cur;
 
-                        return content.anchoredPosition + new Vector2(0, diff);
-                    }
+                    return content.anchoredPosition + new Vector2(0, diff);
                 }
+            }
+
+            if (horizontal)
+            {
+                if (content.anchoredPosition.x > 0)
+                {
+                    return Vector2.zero;
+                }
+
+                Vector2 lastItemPos = _Content.GetLastItemPos();
+
+                if (lastItemPos.x <= viewport.rect.width - _Content.ItemWidth)
+                {
+                    return Vector2.zero;
+                }
+
+                float target = -(viewport.rect.width - _Content.ItemWidth);
+
+                float cur = content.anchoredPosition.x + lastItemPos.x;
+                
+                float diff = target - cur;
+
+                return content.anchoredPosition + new Vector2(0, diff);
             }
                 
             return Vector2.zero;

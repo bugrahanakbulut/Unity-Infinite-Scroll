@@ -851,7 +851,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _restrictionSettings:
-    _contentOverflowRange: 400
+    _contentOverflowRange: 200
     _contentDecelerationInOverflow: 0.25
   _focusSettings:
     _focusOffset: 100
@@ -948,7 +948,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _content: {fileID: 1187315698}
-  _itemCount: 350
+  _itemCount: 25
 --- !u!114 &1334756372
 MonoBehaviour:
   m_ObjectHideFlags: 0
