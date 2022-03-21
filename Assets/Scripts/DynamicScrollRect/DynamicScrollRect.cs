@@ -177,7 +177,7 @@ namespace DynamicScrollRect
             }
         
             Vector2 delta = velocity.normalized;
-        
+            
             if (!IsDragValid(delta))
             {
                 Vector2 contentPos = GetRestrictedContentPositionOnScroll(delta);
@@ -334,10 +334,10 @@ namespace DynamicScrollRect
             else
             {
                 Vector2 lastItemPos = _Content.GetLastItemPos();
-
+                
                 // Calculate local position of last item's end position in viewport rect 
                 if (!_Content.CanAddNewItemIntoTail() &&
-                    content.anchoredPosition.x + viewport.rect.width + lastItemPos.x + _Content.ItemWidth > 0)
+                    content.anchoredPosition.x + lastItemPos.x <= viewport.rect.width - _Content.ItemWidth)
                 {
                     return false;
                 }
@@ -371,7 +371,7 @@ namespace DynamicScrollRect
             if (horizontal)
             {
                 float restriction = GetHorizontalRestrictionWeight(delta);
-
+                
                 Vector2 result = CalculateRestrictedPosition(content.anchoredPosition, position, restriction);
 
                 result.y = content.anchoredPosition.y;
@@ -410,6 +410,19 @@ namespace DynamicScrollRect
                 res = CalculateRestrictedPosition(curPos, nextPos, restriction);
             
                 res.x = 0;
+            }
+
+            if (horizontal)
+            {
+                deltaPos.y = 0;
+
+                Vector2 curPos = content.anchoredPosition;
+
+                Vector2 nextPos = curPos + deltaPos;
+                
+                res = CalculateRestrictedPosition(curPos, nextPos, restriction);
+                
+                res.y = 0;
             }
 
             velocity *= _restrictionSettings.ContentDecelerationInOverflow;
@@ -476,20 +489,18 @@ namespace DynamicScrollRect
                 }
                 else
                 {
-                    float max = -(viewport.rect.width - maxLimit - _Content.ItemWidth);
+                    float max = viewport.rect.width - maxLimit - _Content.ItemWidth;
                 
                     float cur = content.anchoredPosition.x + lastItemPos.x;
 
                     float diff = cur - max;
                     
-                    Debug.Log($"{max} {cur}");
-
-                    return 1f - Mathf.Clamp(diff / maxLimit, 0, 1);
+                    return 1 - Mathf.Clamp(diff / maxLimit, 0, 1);
                 }
             }
             
             float restrictionVal = Mathf.Clamp(Mathf.Abs(content.anchoredPosition.x) / maxLimit, 0, 1);
-            
+
             return restrictionVal;
         }
 
@@ -534,13 +545,13 @@ namespace DynamicScrollRect
                     return Vector2.zero;
                 }
 
-                float target = -(viewport.rect.width - _Content.ItemWidth);
+                float target = viewport.rect.width - _Content.ItemWidth;
 
                 float cur = content.anchoredPosition.x + lastItemPos.x;
                 
-                float diff = target - cur;
+                float diff = target - cur; 
 
-                return content.anchoredPosition + new Vector2(0, diff);
+                return content.anchoredPosition + new Vector2(diff, 0);
             }
                 
             return Vector2.zero;

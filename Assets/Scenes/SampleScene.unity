@@ -948,7 +948,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _content: {fileID: 1187315698}
-  _itemCount: 25
+  _itemCount: 5
 --- !u!114 &1334756372
 MonoBehaviour:
   m_ObjectHideFlags: 0
