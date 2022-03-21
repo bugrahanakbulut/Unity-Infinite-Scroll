@@ -253,7 +253,7 @@ namespace DynamicScrollRect
                 bool positiveDelta = delta.x > 0;
 
                 if (positiveDelta &&
-                    _Content.GetFirstItemPos().x + content.anchoredPosition.x <= _Content.ItemWidth + _Content.Spacing.x)
+                    _Content.GetFirstItemPos().x + content.anchoredPosition.x >= -_Content.ItemWidth - _Content.Spacing.x)
                 {
                     _Content.AddIntoHead();
                 }
@@ -271,7 +271,7 @@ namespace DynamicScrollRect
                 }
 
                 if (!positiveDelta &&
-                    _Content.GetFirstItemPos().x + content.anchoredPosition.x >= (2 * _Content.ItemWidth) + _Content.Spacing.x)
+                    _Content.GetFirstItemPos().x + content.anchoredPosition.x <= (-2 * _Content.ItemWidth) - _Content.Spacing.x)
                 {
                     _Content.DeleteFromHead();
                 }
