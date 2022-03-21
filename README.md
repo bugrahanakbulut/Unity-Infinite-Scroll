@@ -1,7 +1,9 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/bugrahanakbulut/unity-infinite-scroll/badge/main)](https://www.codefactor.io/repository/github/bugrahanakbulut/unity-infinite-scroll/overview/main)
 
 # Unity-Infinite-Scroll
-Unity UI Optimized Scroll Rect to represent large number of entities with less rect transform. Currently only vertical scroll supported.
+Unity UI Optimized Scroll Rect to represent large number of entities with less rect transform. Currently only vertical scroll supported. 
+
+DynamicScrollRect does not rely any layout group element to keep entities organized. You can use vertical, horizontal or grid orientation without using any built-in layout element.
 
 ![Alt Text](https://github.com/bugrahanakbulut/Unity-Infinite-Scroll/blob/main/Assets/Resources/scroll_infinite.gif)
 ![Alt Text](https://github.com/bugrahanakbulut/Unity-Infinite-Scroll/blob/main/Assets/Resources/scroll_jumpback.gif)
