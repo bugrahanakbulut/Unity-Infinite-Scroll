@@ -5,6 +5,7 @@ Unity UI Optimized Scroll Rect to represent large number of entities with less r
 
 ![Alt Text](https://github.com/bugrahanakbulut/Unity-Infinite-Scroll/blob/main/Assets/Resources/scroll_infinite.gif)
 ![Alt Text](https://github.com/bugrahanakbulut/Unity-Infinite-Scroll/blob/main/Assets/Resources/scroll_jumpback.gif)
+![Alt Text](https://github.com/bugrahanakbulut/Unity-Infinite-Scroll/blob/main/Assets/Resources/horizontal_scroll.gif)
 
 
 ## For Custom Usage
@@ -57,8 +58,8 @@ Scroll rect can make focus easily when entities outside of the viewport. You can
 This project still in under development so there might be some naughty bugs :D. If you met some of them or you need to implement any feature top of it, and if you get stuck please feel free to contact. There are some feature I will be implement in near future :
     
 - [x] Focus Item :tada:
-- [ ] Horizontal Movement Support [wip]
-- [ ] Handling changes in data throughout application life-time
+- [X] Horizontal Movement Support :tada:
+- [ ] Handling changes in entities (adding, removing etc.) throughout application life-time
     
     
 ## Contact & Some Additional Notes
